@@ -1,7 +1,7 @@
 const ejs = require("ejs");
-const chromium = require("@sparticuz/chromium-min");
-const puppeteer = require("puppeteer-core");
 const path = require("path");
+const puppeteer = require("puppeteer-core");
+const chromium = require("@sparticuz/chromium-min");
 
 module.exports = async (req, res) => {
   try {
@@ -19,18 +19,36 @@ module.exports = async (req, res) => {
             total: 370,
           };
 
-    // 1️⃣ Render EJS → HTML
+    // 🧾 Render EJS
     const templatePath = path.join(__dirname, "../templates/invoice.ejs");
     const html = await ejs.renderFile(templatePath, data);
 
-    // 2️⃣ Launch Puppeteer
-    const executablePath = await chromium.executablePath;
+    // 🧩 Detect Environment
+    const isLocal = !process.env.AWS_REGION; // true on local dev, false on Vercel
+    console.log("Running environment:", isLocal ? "local" : "serverless");
 
+    // 🧭 Get executable path
+    let executablePath;
+    if (isLocal) {
+      // Local: use installed Chrome or Chromium
+      executablePath =
+        process.platform === "win32"
+          ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+          : "/usr/bin/google-chrome";
+    } else {
+      // Vercel: use Sparticuz bundled Chromium
+      executablePath = await chromium.executablePath();
+    }
+
+    console.log("Using Chrome binary at:", executablePath);
+
+    // 🧠 Launch Puppeteer
     const browser = await puppeteer.launch({
-      args: chromium.args,
+      args: isLocal ? [] : chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath,
       headless: true,
+      ignoreHTTPSErrors: true,
     });
 
     const page = await browser.newPage();
@@ -49,10 +67,8 @@ module.exports = async (req, res) => {
     res.send(pdfBuffer);
   } catch (err) {
     console.error("❌ PDF generation failed:", err);
-    res.status(500).json({
-      error: "Error generating PDF",
-      details: err.message,
-      stack: err.stack,
-    });
+    res
+      .status(500)
+      .json({ error: "Error generating PDF", details: err.message, stack: err.stack });
   }
 };
