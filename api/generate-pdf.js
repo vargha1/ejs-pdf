@@ -4,12 +4,12 @@ import puppeteer from "puppeteer-core";
 import path from "path";
 import { fileURLToPath } from "url";
 
+// ✅ Correct ESM path handling
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default async function handler(req, res) {
   try {
-    // Example data (you can also send it in req.body)
     const data =
       req.body && Object.keys(req.body).length
         ? req.body
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath,
-      headless: true, // force headless mode
+      headless: true,
     });
 
     const page = await browser.newPage();
