@@ -5,8 +5,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 // ✅ Correct ESM path handling
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const filename = fileURLToPath(import.meta.url);
+const dirname = path.dirname(filename);
 
 export default async function handler(req, res) {
   try {
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
           };
 
     // 1️⃣ Render EJS → HTML
-    const templatePath = path.join(__dirname, "../templates/invoice.ejs");
+    const templatePath = path.join(dirname, "../templates/invoice.ejs");
     const html = await ejs.renderFile(templatePath, data);
 
     // 2️⃣ Launch Puppeteer with Sparticuz Chromium
