@@ -1,51 +1,100 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 <head>
-  <meta charset="UTF-8" />
-  <title>Invoice</title>
+  <meta charset="UTF-8">
+  <title>فاکتور</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 40px;
-      color: #333;
+      font-family: "Tahoma", Arial, sans-serif;
+      direction: rtl;       /* Right-to-left layout */
+      margin: 20mm;
+      line-height: 1.5;
     }
+
+    .page {
+      width: 100%;
+      max-width: 210mm;     /* A4 width */
+      box-sizing: border-box;
+    }
+
     h1 {
+      text-align: center;
       color: #007bff;
+      margin-bottom: 20px;
     }
-    .invoice {
+
+    .invoice-header {
+      margin-bottom: 20px;
+    }
+
+    .invoice-header p {
+      margin: 2px 0;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      word-wrap: break-word;
+    }
+
+    th, td {
       border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 20px;
+      padding: 8px;
+      text-align: right;       /* align right for RTL */
+      word-break: break-word;
+      font-size: 14px;
     }
-    .item {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 0;
+
+    th {
+      background-color: #f0f0f0;
     }
+
+    /* Number styling to prevent overlap */
+    .number {
+      display: inline-block;  /* reserve space */
+      min-width: 80px;        /* optional for alignment */
+      text-align: left;       /* numbers LTR inside RTL context */
+      direction: ltr;         /* force LTR for numerals */
+    }
+
     .total {
       margin-top: 15px;
       font-weight: bold;
-      font-size: 1.1rem;
+      text-align: right;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
-  <h1>Invoice</h1>
-  <div class="invoice">
-    <p><strong>Customer:</strong> <%= customer %></p>
-    <p><strong>Date:</strong> <%= date %></p>
+  <div class="page">
+    <h1>فاکتور</h1>
 
-    <hr>
+    <div class="invoice-header">
+      <p><strong>مشتری:</strong> <%= customer %></p>
+      <p><strong>تاریخ:</strong> <%= date %></p>
+    </div>
 
-    <% items.forEach(item => { %>
-      <div class="item">
-        <span><%= item.name %></span>
-        <span>$<%= item.price.toFixed(2) %></span>
-      </div>
-    <% }) %>
+    <table>
+      <thead>
+        <tr>
+          <th>شرح کالا / خدمات</th>
+          <th>قیمت (تومان)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% items.forEach(item => { %>
+          <tr>
+            <td><%= item.name %></td>
+            <td><span class="number"><%= item.price.toLocaleString() %></span></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
 
     <div class="total">
-      Total: $<%= total.toFixed(2) %>
+      جمع کل: <span class="number"><%= total.toLocaleString() %></span> تومان
     </div>
   </div>
 </body>
