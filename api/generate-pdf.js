@@ -1,14 +1,9 @@
-import ejs from "ejs";
-import chromium from "@sparticuz/chromium-min";
-import puppeteer from "puppeteer-core";
-import path from "path";
-import { fileURLToPath } from "url";
+const ejs = require("ejs");
+const chromium = require("@sparticuz/chromium-min");
+const puppeteer = require("puppeteer-core");
+const path = require("path");
 
-// ✅ Correct ESM path handling
-const filename = fileURLToPath(import.meta.url);
-const dirname = path.dirname(filename);
-
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   try {
     const data =
       req.body && Object.keys(req.body).length
@@ -25,11 +20,11 @@ export default async function handler(req, res) {
           };
 
     // 1️⃣ Render EJS → HTML
-    const templatePath = path.join(dirname, "../templates/invoice.ejs");
+    const templatePath = path.join(__dirname, "../templates/invoice.ejs");
     const html = await ejs.renderFile(templatePath, data);
 
-    // 2️⃣ Launch Puppeteer with Sparticuz Chromium
-    const executablePath = await chromium.executablePath();
+    // 2️⃣ Launch Puppeteer
+    const executablePath = await chromium.executablePath;
 
     const browser = await puppeteer.launch({
       args: chromium.args,
@@ -41,7 +36,6 @@ export default async function handler(req, res) {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle0" });
 
-    // 3️⃣ Generate PDF Buffer
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
@@ -50,12 +44,15 @@ export default async function handler(req, res) {
 
     await browser.close();
 
-    // 4️⃣ Send PDF as a download
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", "attachment; filename=invoice.pdf");
     res.send(pdfBuffer);
   } catch (err) {
     console.error("❌ PDF generation failed:", err);
-    res.status(500).send("Error generating PDF");
+    res.status(500).json({
+      error: "Error generating PDF",
+      details: err.message,
+      stack: err.stack,
+    });
   }
-}
+};
