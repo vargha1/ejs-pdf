@@ -27,9 +27,9 @@ app.post("/generate-pdf", async (req, res) => {
 
     // Add formatted numbers for template
     data.items.forEach(item => {
-      item.formattedPrice = formatNumber(item.price);
+      item.formattedPrice = item.price;
     });
-    data.formattedTotal = formatNumber(data.total);
+    data.formattedTotal = data.total;
 
     // Render EJS template
     const templatePath = path.join(__dirname, "templates/invoice.ejs");
